@@ -1,0 +1,7 @@
+,Depression,Mania,Panic,Anxiety Generalization,Trauma Exposure,Stress Reactivity
+Bipolar Disorder,0.90,0.90,,,,
+Major Depressive Disorder,0.90,,,,,
+Specific Phobia Disorder,,,0.25,0.50,,
+Social Anxiety,,,0.25,0.75,,
+Panic Disorder,,,1.00,,0.25,0.50
+Agoraphobia,,,0.90,,,
