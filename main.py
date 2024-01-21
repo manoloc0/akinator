@@ -1,6 +1,6 @@
 # Source code from Rogério Chaves, X account @_rchaves_
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from best_question import find_best_question
 # we will need those imports later
 import random
@@ -10,6 +10,7 @@ from parse_csv import parse_csv
 0
 # instantiate flask object
 app = Flask(__name__)
+app.secret_key = 'secret key'
 
 global questions_so_far, answers_so_far, characters, questions
 characters, questions = parse_csv()
@@ -22,20 +23,32 @@ begin = False
 
 @app.route('/', methods=['GET', 'POST']) #We must add 'POST' as allowable methods
 def index():
+    if request.method == 'GET':
+        # Clear session data when accessing the index page
+        session.clear()
+
+    # Queue up guessable characters
+    char_list = []
+    for idx in range(len(characters) - 1):
+        char_list.append(characters[idx + 1].get('name'))
+
+    print("chars: " + str(char_list))
+
+    if request.method == 'POST':    # If the method is a select box
+        # Form submitted, check the action value
+        action = request.form.get('action') #get the action associated from select box
+        if action == 'begin':
+            return redirect(url_for('pages'))
+    return render_template('index.html', char_list = char_list)
+
+@app.route('/pages', methods=['GET', 'POST'])
+def pages():
     global result, rounds, begin
     global questions_so_far, answers_so_far, characters, questions
 
-    while(begin == False):
-        begin = True
-        return render_template('index.html', default= "default")
-
     if request.method == 'POST':    # If the method is a select box
-
         # Form submitted, check the action value
         action = request.form.get('action') #get the action associated from select box
-
-        if action == 'begin':
-            pass
 
         if action == 'play_again':
             return playagain()
@@ -53,7 +66,7 @@ def index():
             response_char = result.get('name')
             times_played = update_char(response_char, questions_so_far, answers_so_far)
             correct_answer_message = "I win!"
-            return render_template('index.html', times_played = times_played, response_char= response_char, correct_answer_message=correct_answer_message)
+            return render_template('pages.html', times_played = times_played, response_char= response_char, correct_answer_message=correct_answer_message)
 
 
         elif action == 'no':
@@ -62,7 +75,7 @@ def index():
             rounds += 1
             if rounds >= 3:
                 game_over_message = "I lose!"
-                return render_template('index.html', game_over_message = game_over_message)
+                return render_template('pages.html', game_over_message = game_over_message)
 
             #Remove the incorrect answer from the dictionary
             for char in characters:
@@ -86,13 +99,13 @@ def index():
     #If there are no qustions left
     if len(questions_left) == 0:
         result = sorted(probabilities, key=lambda p: p['probability'], reverse=True)[0]
-        return render_template('index.html', result=result['name'])
+        return render_template('pages.html', result=result['name'])
 
     #Set First Question
     if len(questions_so_far) == 0:
         next_question = 2
         print(sorted(probabilities, key=lambda p: p['probability'], reverse=True))
-        return render_template('index.html', question=next_question, question_text=questions[next_question])
+        return render_template('pages.html', question=next_question, question_text=questions[next_question])
 
     else:
         #Add condition here where if the entropy is low for even the best question, then probably stop. Perhaps stopping condition is for low entropy of best question and high probability of character.
@@ -113,7 +126,7 @@ def index():
         # If the best question entropy is less than a certain threshold, end the game.
         if ((best_q_entropy < 3.0 ) & (max_prob > .90)) | (contender_differential > .15) | (best_q_entropy < 0.7): #| (max_prob > .1) NOTE: final conditional is for testing purposes only
             result = sorted(probabilities, key=lambda p: p['probability'], reverse=True)[0]
-            return render_template('index.html', result=result['name'])
+            return render_template('pages.html', result=result['name'])
 
         #print(next_question)
         #print(type(next_question))
@@ -121,7 +134,7 @@ def index():
         print(sorted(
             probabilities, key=lambda p: p['probability'], reverse=True))
 
-        return render_template('index.html', question=next_question, question_text=questions[next_question])
+        return render_template('pages.html', question=next_question, question_text=questions[next_question])
 
 def playagain():
     global questions_so_far, answers_so_far, characters, questions, rounds

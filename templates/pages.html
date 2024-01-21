@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <title>In Progress | Character Akinator by Tyler Cadenas</title>
+  <link rel="stylesheet" type ="text/css" href="{{ url_for('static', filename='style.css')}}">
+</head>
+
+<body id="questions">
+  
+    {% if result %}
+      <h1>You are thinking of {{ result }}!</h1>
+      <label> Is this correct? </label><br />
+      <form method="post">
+        <button type="submit" name="action" value="yes">Yes</button>
+        <button type="submit" name="action" value="no">No</button>
+      </form>
+  
+    {% elif correct_answer_message %}
+          <h1>{{correct_answer_message}}</h1>
+          <label> {{response_char}} has been guessed {{times_played}} times. </label><br />
+          <br>
+          <form method="post">
+              <button type="submit" name="action" value="play_again">Play Again</button>
+          </form>
+  
+  {% elif game_over_message %}
+      <h1>{{game_over_message}}</h1>
+      <form action="/" method="post">
+          <label for="user_input">What was your character? </label>
+          <input type="text" id="user_input" name="user_input" required />
+          <button type="submit" name="action" value="augment">Submit and Play Again</button>
+      </form>
+  
+  
+    {% else %}
+      <h1>{{ question_text }}</h1>
+      <form>
+        <input type="hidden" name="question" value="{{ question }}" />
+        <label><input type="radio" name="answer" value="1.0" required /> Yes</label><br />
+        <label><input type="radio" name="answer" value="0.75" required /> Probably</label><br />
+        <label><input type="radio" name="answer" value="0.5" required /> I don't know</label><br />
+        <label><input type="radio" name="answer" value="0.25" required /> Probably not</label><br />
+        <label><input type="radio" name="answer" value="0.0" required /> No</label><br />
+        <br />
+        <input type="submit" value="Next" />
+      </form>
+    {% endif %}
+  </body>
