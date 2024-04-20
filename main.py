@@ -2,29 +2,28 @@
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from best_question import find_best_question
-# we will need those imports later
-import random
-from basic_helpers import calculate_probabilites, calculate_character_probability, character_answer
+
+from basic_helpers import calculate_probabilites
 from update_csv import update_char, augment_chars
 from parse_csv import parse_csv
-0
-# instantiate flask object
+
+# Instantiate Flask object
 app = Flask(__name__)
 app.secret_key = 'secret key'
-
 global questions_so_far, answers_so_far, characters, questions
 characters, questions = parse_csv()
 questions_so_far = []
 answers_so_far = []
 global rounds, begin
+
+# Initialize state of game
 rounds = 0
 begin = False
 
-
-@app.route('/', methods=['GET', 'POST']) #We must add 'POST' as allowable methods
+@app.route('/', methods=['GET', 'POST'])
 def index():
+
     if request.method == 'GET':
-        # Clear session data when accessing the index page
         session.clear()
 
     # Queue up guessable characters
@@ -32,11 +31,9 @@ def index():
     for idx in range(len(characters) - 1):
         char_list.append(characters[idx + 1].get('name'))
 
-    print("chars: " + str(char_list))
-
-    if request.method == 'POST':    # If the method is a select box
-        # Form submitted, check the action value
-        action = request.form.get('action') #get the action associated from select box
+    # # If the method is a select box, get the action associated from select box. If it's begin, redirect to 'pages'.
+    if request.method == 'POST':
+        action = request.form.get('action')
         if action == 'begin':
             return redirect(url_for('pages'))
     return render_template('index.html', char_list = char_list)
@@ -111,7 +108,6 @@ def pages():
         #Add condition here where if the entropy is low for even the best question, then probably stop. Perhaps stopping condition is for low entropy of best question and high probability of character.
 
         #next_question = random.choice(questions_left)
-        #Working on this:
         next_question, best_q_entropy = find_best_question(questions_left, characters, questions_so_far, answers_so_far)
 
         #max_prob = float(max(probabilities, key=lambda x: x['probability'])['probability'])
@@ -147,4 +143,3 @@ def playagain():
 
 if __name__ == '__main__':
     app.run(port=8000)      #Changed to port 8000
-
